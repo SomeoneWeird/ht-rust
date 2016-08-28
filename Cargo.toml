@@ -1,0 +1,8 @@
+[package]
+name = "hudson-taylor"
+version = "0.1.0"
+authors = ["Adam Brady <adam@boxxen.org>"]
+
+[dependencies]
+hyper = "0.9.10"
+rustc-serialize = "0.3.19"
