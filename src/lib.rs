@@ -10,7 +10,7 @@ pub trait Transport {
   fn stop(&self);
   fn connect(&self);
   fn disconnect(&self);
-  fn call<T>(&self, method: &str, data: &T) -> &str
+  fn call<T>(&self, method: &str, data: &T) -> String
     where T: Encodable;
 }
 
@@ -34,7 +34,7 @@ impl<'a, T: 'a + Transport> Client<'a, T> {
       t.disconnect()
     }
   }
-  fn call<A>(&self, service: &str, method: &str, data: &A) -> &str 
+  fn call<A>(&self, service: &str, method: &str, data: &A) -> String
     where A: Encodable {
     match self.transports.get(service) {
       Some(transport) =>  {
@@ -43,8 +43,7 @@ impl<'a, T: 'a + Transport> Client<'a, T> {
       }
       _ => {
         println!("unknown service");
-        let result = "error";
-        result
+        String::from("error")
       }
     }
   }
@@ -71,7 +70,7 @@ impl<'a, T: 'a + Transport, F> Service<'a, T, F> {
   }
 }
 
-fn post_json<T>(url: &str, payload: &T) -> hyper::Result<String>
+fn post_json<T>(url: &str, payload: &T) -> Result<String, hyper::Error>
     where T: Encodable {
     let client = hyper::Client::new();
     let body = json::encode(payload).unwrap();
@@ -100,15 +99,17 @@ impl<'a> Transport for HTTPTransport<'a> {
   fn stop(&self) {}
   fn connect(&self) {}
   fn disconnect(&self) {} 
-  fn call<T>(&self, method: &str, data: &T) -> &str
+  fn call<T>(&self, method: &str, data: &T) -> String
     where T: Encodable {
     let url = format!("http://{}:{}/{}", self.host, self.port, "ht".to_owned());
 
     match post_json(&url, &data) {
-      Ok(request) => request,
+      Ok(response) => {
+        response
+      },
       Err(e) => {
         println!("error: {}", e);
-        &String::from("error")
+        String::from("error")
       }
     }
 
